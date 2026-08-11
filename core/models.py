@@ -4,9 +4,9 @@ from django.contrib.auth.models import AbstractUser
 
 class Usuario(AbstractUser):
     class Rol(models.TextChoices):
+        ADMIN = 'admin', 'Admin'
         CLIENTE = 'cliente', 'Cliente'
-        PROFESIONAL = 'profesional', 'Profesional'
-        ADMINISTRADOR = 'administrador', 'Administrador'
+        VENDEDOR = 'vendedor', 'Vendedor'
 
     email = models.EmailField(unique=True)
     telefono = models.CharField(max_length=20, blank=True, null=True)
