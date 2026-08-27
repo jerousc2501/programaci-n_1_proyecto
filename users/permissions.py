@@ -29,3 +29,12 @@ class IsAdminUserRole(BasePermission):
         return bool(
             user and user.is_authenticated and (user.is_staff or user.rol == 'admin')
         )
+
+
+class IsOwnerOrReadOnly(BasePermission):
+    """Permite escritura solo al dueño del objeto."""
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in SAFE_METHODS:
+            return True
+        return obj.usuario == request.user
