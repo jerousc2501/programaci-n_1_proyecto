@@ -1,16 +1,40 @@
-# React + Vite
+# FitTech - Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+## Descripción
 
-Currently, two official plugins are available:
+Cliente React de FitTech, una plataforma de fitness y nutrición que conecta profesionales con usuarios.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Tecnologías
 
-## React Compiler
+- **React** - Librería de UI
+- **Vite** - Build tool y dev server
+- **CSS** - Estilos
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Iniciar desarrollo
 
-## Expanding the Oxlint configuration
+```bash
+npm install
+npm run dev
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+El servidor levanta en `http://localhost:3000`
+
+## Estructura
+
+```
+frontend/
+├── src/
+│   ├── components/
+│   │   ├── Navbar.jsx    # Barra de navegación
+│   │   ├── Home.jsx      # Página principal
+│   │   └── Footer.jsx    # Pie de página
+│   ├── App.jsx           # Componente raíz
+│   ├── App.css
+│   └── main.jsx
+├── index.html
+└── vite.config.js
+```
+
+## Backend
+
+El frontend consume una API Django REST que corre en `http://localhost:8000`. Ver la documentación de la API en `/api/docs/` (Swagger).
