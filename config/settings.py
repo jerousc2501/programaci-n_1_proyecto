@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-auzr82!^+vdng60p$ton3w^)#amqy7$7100tebujjm@ia7l1nw
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'testserver']
 
 
 # Application definition
@@ -38,9 +38,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'core',
+    'users',
     'rest_framework',
     'corsheaders',
     'drf_spectacular',
+    'rest_framework_simplejwt.token_blacklist',
 ]
 
 MIDDLEWARE = [
@@ -88,7 +90,7 @@ DATABASES = {
     }
 }
 
-AUTH_USER_MODEL = 'core.Usuario'
+AUTH_USER_MODEL = 'users.Usuario'
 
 
 # Password validation
@@ -136,4 +138,13 @@ CORS_ALLOWED_ORIGINS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'FitTech API',
+    'DESCRIPTION': 'API para gestion de usuarios, roles y planes de FitTech.',
+    'VERSION': '1.0.0',
 }

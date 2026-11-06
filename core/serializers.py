@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Usuario, PerfilProfesional, Plan, PlanCliente
+from .models import PerfilProfesional, Plan, PlanCliente
+from users.models import Usuario
 
 
 class UsuarioSerializer(serializers.ModelSerializer):
@@ -8,6 +9,14 @@ class UsuarioSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'email', 'first_name', 'last_name',
                   'telefono', 'fecha_nacimiento', 'altura', 'peso', 'rol', 'is_active']
         read_only_fields = ['id']
+
+
+class UsuarioListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Usuario
+        fields = ['id', 'username', 'email', 'first_name', 'last_name',
+                  'telefono', 'fecha_nacimiento', 'altura', 'peso', 'rol', 'is_active']
+        read_only_fields = fields
 
 
 class PerfilProfesionalSerializer(serializers.ModelSerializer):
@@ -26,7 +35,7 @@ class PlanClienteSerializer(serializers.ModelSerializer):
     class Meta:
         model = PlanCliente
         fields = '__all__'
-        read_only_fields = ['precio_pagado', 'fecha_compra', 'fecha_fin']
+        read_only_fields = ['cliente', 'precio_pagado', 'fecha_compra', 'fecha_fin']
 
     def create(self, validated_data):
         plan = validated_data['plan']
