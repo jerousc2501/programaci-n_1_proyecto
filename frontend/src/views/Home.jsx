@@ -1,5 +1,3 @@
-import './Home.css'
-
 function Home() {
   const FEATURES = [
     { id: 'planes', icon: '🏋️‍♂️', title: 'Explorar Planes', desc: 'Descubrí planes personalizados para tus objetivos.', linkText: 'Ver más' },
