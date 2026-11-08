@@ -2,7 +2,7 @@
 
 **Proyecto:** FitTech  
 **Módulo:** Backend & API REST  
-**Autor / Alumno:** Jeremías [o tu apellido]  
+**Autor / Alumno:** Jerónimo Soto 
 **Fecha:** Noviembre 2026  
 
 ---

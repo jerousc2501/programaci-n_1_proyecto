@@ -123,14 +123,6 @@
             }
           },
           "response": []
-        },
-        {
-          "name": "login",
-          "request": {
-            "method": "GET",
-            "header": []
-          },
-          "response": []
         }
       ]
     },
