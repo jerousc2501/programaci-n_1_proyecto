@@ -31,6 +31,16 @@ class IsAdminUserRole(BasePermission):
         )
 
 
+class IsAdminOrReadOnly(BasePermission):
+    """Permite lectura a cualquier usuario autenticado; escritura solo a administradores."""
+
+    def has_permission(self, request, view):
+        if request.method in SAFE_METHODS:
+            return bool(request.user and request.user.is_authenticated)
+        user = request.user
+        return bool(user and user.is_authenticated and (user.is_staff or user.rol == 'admin'))
+
+
 class IsOwnerOrReadOnly(BasePermission):
     """Permite escritura solo al dueño del objeto."""
 

@@ -5,7 +5,7 @@ from .serializers import (
     UsuarioSerializer, UsuarioListSerializer, PerfilProfesionalSerializer,
     PlanSerializer, PlanClienteSerializer,
 )
-from users.permissions import IsAdminOrVendedorOrReadOnly, IsAdminUserRole, IsCliente, IsOwnerOrReadOnly
+from users.permissions import IsAdminOrVendedorOrReadOnly, IsAdminUserRole, IsCliente, IsOwnerOrReadOnly, IsAdminOrReadOnly
 
 
 class UsuarioViewSet(viewsets.ModelViewSet):
@@ -28,7 +28,7 @@ class PerfilProfesionalViewSet(viewsets.ModelViewSet):
 class PlanViewSet(viewsets.ModelViewSet):
     queryset = Plan.objects.all()
     serializer_class = PlanSerializer
-    permission_classes = [IsAdminOrVendedorOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class PlanClienteViewSet(viewsets.ModelViewSet):
