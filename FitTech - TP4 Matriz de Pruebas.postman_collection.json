@@ -1,0 +1,321 @@
+{
+  "info": {
+    "_postman_id": "0b5ed07e-aad3-42a7-8316-9154786d6e30",
+    "name": "FitTech - TP4 Matriz de Pruebas",
+    "description": "Colección oficial para pruebas manuales y casos de borde del TP4 de FitTech",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "57318638"
+  },
+  "item": [
+    {
+      "name": "1. Roles y Permisos",
+      "item": [
+        {
+          "name": "TP4-01: Admin Crea Plan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Plan de Fuerza Avanzado\",\n  \"tipo\": \"entrenamiento\",\n  \"precio\": 150.00,\n  \"duracion_dias\": 30,\n  \"estado\": \"activo\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/planes/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "planes",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TP4-02: Admin Elimina Plan",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/planes/1/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "planes",
+                "1",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TP4-03: Cliente Intenta Crear Plan (Debe Fallar)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{client_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Plan Ilegal por Cliente\",\n  \"tipo\": \"entrenamiento\",\n  \"precio\": 100.00,\n  \"duracion_dias\": 15,\n  \"estado\": \"activo\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/planes/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "planes",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TP4-04: Cliente Intenta Eliminar Plan (Debe Fallar)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{client_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/planes/1/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "planes",
+                "1",
+                ""
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Lógica de Negocio",
+      "item": [
+        {
+          "name": "TP4-05: Registro Email Duplicado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"otro_usuario\",\n  \"email\": \"usuario_existente@fittech.com\",\n  \"password\": \"Password123!\",\n  \"rol\": \"cliente\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TP4-06: Compra con Datos Vacíos",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{client_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"plan\": null,\n  \"cantidad\": 0,\n  \"fecha_inicio\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/planes-clientes/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "planes-clientes",
+                ""
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Flujo Completo",
+      "item": [
+        {
+          "name": "TP4-07: Flujo E2E (Login -> Buscar -> Comprar -> Verificar)",
+          "item": [
+            {
+              "name": "1. Login Cliente",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"cliente_prueba\",\n  \"password\": \"Password123!\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/auth/login/",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "login",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "2. Buscar Planes Activos",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{client_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/planes/?estado=activo",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "planes",
+                    ""
+                  ],
+                  "query": [
+                    {
+                      "key": "estado",
+                      "value": "activo"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "3. Comprar Plan",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{client_token}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"plan\": 1,\n  \"cantidad\": 1,\n  \"fecha_inicio\": \"2026-11-08\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/planes-clientes/",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "planes-clientes",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "4. Verificar Compra Final",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{client_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/planes-clientes/",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "api",
+                    "planes-clientes",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

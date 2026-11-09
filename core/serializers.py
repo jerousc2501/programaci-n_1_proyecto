@@ -29,6 +29,12 @@ class PlanSerializer(serializers.ModelSerializer):
     class Meta:
         model = Plan
         fields = '__all__'
+        read_only_fields = ['profesional']
+
+    def validate_precio(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("El precio del plan debe ser mayor a cero.")
+        return value
 
 
 class PlanClienteSerializer(serializers.ModelSerializer):
@@ -42,7 +48,7 @@ class PlanClienteSerializer(serializers.ModelSerializer):
         cantidad = validated_data.get('cantidad', 1)
         fecha_inicio = validated_data['fecha_inicio']
 
-        validated_data['precio_pagado'] = plan.precio
+        validated_data['precio_pagado'] = plan.precio * cantidad
         from datetime import timedelta
         validated_data['fecha_fin'] = fecha_inicio + timedelta(days=plan.duracion_dias * cantidad)
 
