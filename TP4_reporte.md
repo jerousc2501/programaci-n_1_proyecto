@@ -42,4 +42,4 @@ Se completó exitosamente el circuito principal de interacción del usuario clie
 ---
 
 ## 4. Conclusiones y Correcciones Aplicadas
-Durante la fase de pruebas exploratorias se detectó que el endpoint de planes permitía escrituras de usuarios con rol `Cliente`. Mediante el flujo de Pull Request se implementó el permiso personalizado **`IsAdminOrReadOnly`**, el cual blindó correctamente los métodos de escritura (`POST`, `PUT`, `DELETE`) dejando exclusivamente el acceso de lectura (`GET`) para usuarios autenticados generales. El sistema se encuentra estable, seguro y listo para los siguientes módulos del proyecto.
+Durante la fase de pruebas exploratorias se detectó que el endpoint de planes permitía escrituras de usuarios con rol `Cliente`. Mediante el flujo de Pull Request se implementó el permiso personalizado **`IsAdminOrProfesionalOrReadOnly`**, el cual blindó correctamente los métodos de escritura (`POST`, `PUT`, `DELETE`) dejando exclusivamente el acceso de lectura (`GET`) para usuarios autenticados generales. El sistema se encuentra estable, seguro y listo para los siguientes módulos del proyecto.
