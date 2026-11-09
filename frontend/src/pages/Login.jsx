@@ -6,25 +6,32 @@ function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
   const { user, login } = useAuth()
   const navigate = useNavigate()
 
-  // Si ya está autenticado, redirigir automáticamente a /
   useEffect(() => {
     if (user) {
       navigate('/', { replace: true })
     }
   }, [user, navigate])
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
-    const cleanEmail = email.trim().toLowerCase()
-    const res = login(cleanEmail, password)
-    if (res.success) {
-      navigate('/')
-    } else {
-      setError(res.message)
+    setLoading(true)
+
+    try {
+      const res = await login(email, password)
+      if (res.success) {
+        navigate('/')
+      } else {
+        setError(res.message)
+      }
+    } catch (err) {
+      setError('Ocurrió un error inesperado al iniciar sesión.')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -41,7 +48,7 @@ function Login() {
               className="form-control"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="ej: admin@fittech.com"
+              placeholder="tu@email.com"
               required
             />
           </div>
@@ -53,12 +60,12 @@ function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              minLength={6}
+              minLength={8}
               required
             />
           </div>
-          <button type="submit" className="btn btn-primary w-100 py-2 mt-2">
-            Entrar
+          <button type="submit" className="btn btn-primary w-100 py-2 mt-2" disabled={loading}>
+            {loading ? 'Iniciando sesión...' : 'Entrar'}
           </button>
         </form>
         <div className="text-center mt-3">
