@@ -3,37 +3,49 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 function Register() {
-  const [name, setName] = useState('')
+  const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
   const { user, register } = useAuth()
   const navigate = useNavigate()
 
-  // Si ya está autenticado, redirigir automáticamente a /
   useEffect(() => {
     if (user) {
       navigate('/', { replace: true })
     }
   }, [user, navigate])
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
-
-    const cleanEmail = email.trim().toLowerCase()
 
     if (password !== confirmPassword) {
       setError('Las contraseñas no coinciden.')
       return
     }
 
-    const res = register({ name, email: cleanEmail, password })
-    if (res.success) {
-      navigate('/')
-    } else {
-      setError(res.message)
+    setLoading(true)
+
+    try {
+      const res = await register({
+        username: username.trim() || email.split('@')[0],
+        email: email.trim().toLowerCase(),
+        password,
+        rol: 'cliente'
+      })
+
+      if (res.success) {
+        navigate('/')
+      } else {
+        setError(res.message)
+      }
+    } catch (err) {
+      setError('Ocurrió un error inesperado al registrarse.')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -44,13 +56,13 @@ function Register() {
         {error && <div className="alert alert-danger py-2">{error}</div>}
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
-            <label className="form-label text-muted">Nombre y Apellido</label>
+            <label className="form-label text-muted">Nombre de usuario</label>
             <input
               type="text"
               className="form-control"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Tu nombre"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="tu_usuario"
               required
             />
           </div>
@@ -61,7 +73,7 @@ function Register() {
               className="form-control"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="ej: tu@email.com"
+              placeholder="tu@email.com"
               required
             />
           </div>
@@ -89,8 +101,8 @@ function Register() {
               required
             />
           </div>
-          <button type="submit" className="btn btn-success w-100 py-2 mt-2">
-            Registrarse
+          <button type="submit" className="btn btn-success w-100 py-2 mt-2" disabled={loading}>
+            {loading ? 'Registrando...' : 'Registrarse'}
           </button>
         </form>
         <div className="text-center mt-3">

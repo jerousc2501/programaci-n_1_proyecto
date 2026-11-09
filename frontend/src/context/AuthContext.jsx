@@ -1,25 +1,10 @@
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useState, useEffect } from 'react'
 
 const AuthContext = createContext(null)
 
 export const AuthProvider = ({ children }) => {
-  // Recuperar usuarios mock de localStorage o usar los predeterminados
-  const [mockUsers, setMockUsers] = useState(() => {
-    try {
-      const savedUsers = localStorage.getItem('fittech_users')
-      if (savedUsers) {
-        return JSON.parse(savedUsers)
-      }
-    } catch (e) {
-      console.error('Error al parsear usuarios guardados:', e)
-    }
-    return [
-      { id: 1, email: 'admin@fittech.com', password: '123456', name: 'Administrador', rol: 'admin' },
-      { id: 2, email: 'cliente@fittech.com', password: '123456', name: 'Cliente Fit', rol: 'cliente' }
-    ]
-  })
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
 
-  // Recuperar usuario autenticado de localStorage con manejo de errores seguro (try/catch)
   const [user, setUser] = useState(() => {
     try {
       const saved = localStorage.getItem('fittech_user')
@@ -31,56 +16,86 @@ export const AuthProvider = ({ children }) => {
     }
   })
 
-  const login = (rawEmail, password) => {
-    const email = rawEmail.trim().toLowerCase()
-    const found = mockUsers.find(
-      (u) => u.email === email && u.password === password
-    )
-    if (found) {
-      // Excluir la contraseña para que no quede expuesta en el objeto de sesión
-      const { password: _, ...userWithoutPassword } = found
-      setUser(userWithoutPassword)
-      localStorage.setItem('fittech_user', JSON.stringify(userWithoutPassword))
+  const [accessToken, setAccessToken] = useState(() => {
+    return localStorage.getItem('fittech_access_token') || null
+  })
+
+  const login = async (email, password) => {
+    try {
+      // DRF SimpleJWT espera 'username' o 'email' dependiendo de la config. Aquí enviamos email y password.
+      const response = await fetch(`${API_URL}/token/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        return { 
+          success: false, 
+          message: data.detail || data.non_field_errors?.[0] || 'Credenciales inválidas.' 
+        }
+      }
+
+      // Guardar tokens
+      localStorage.setItem('fittech_access_token', data.access)
+      localStorage.setItem('fittech_refresh_token', data.refresh)
+      setAccessToken(data.access)
+
+      // Obtener datos del usuario autenticado si el backend lo provee, o simular perfil básico
+      const userData = { email: email.trim().toLowerCase() }
+      setUser(userData)
+      localStorage.setItem('fittech_user', JSON.stringify(userData))
+
       return { success: true }
+    } catch (err) {
+      console.error('Error en login:', err)
+      return { success: false, message: 'Error de conexión con el servidor.' }
     }
-    return { success: false, message: 'Credenciales inválidas (ej: admin@fittech.com / 123)' }
   }
 
-  const register = (userData) => {
-    const email = userData.email.trim().toLowerCase()
-    
-    // Verificar si ya existe
-    const exists = mockUsers.find((u) => u.email === email)
-    if (exists) {
-      return { success: false, message: 'El correo electrónico ya está registrado.' }
+  const register = async (userData) => {
+    try {
+      const response = await fetch(`${API_URL}/register/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...userData,
+          email: userData.email.trim().toLowerCase(),
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        // Formatear errores de DRF
+        const errorMsg = Object.values(data).flat()[0] || 'Error al registrar usuario.'
+        return { success: false, message: errorMsg }
+      }
+
+      // Una vez registrado exitosamente, hacer login automático
+      return await login(userData.email, userData.password)
+    } catch (err) {
+      console.error('Error en registro:', err)
+      return { success: false, message: 'Error de conexión con el servidor.' }
     }
-
-    const newUser = {
-      id: mockUsers.length + 1,
-      ...userData,
-      email,
-      rol: userData.rol || 'cliente'
-    }
-
-    const updatedUsers = [...mockUsers, newUser]
-    setMockUsers(updatedUsers)
-    localStorage.setItem('fittech_users', JSON.stringify(updatedUsers))
-
-    // Excluir la contraseña del estado de sesión activa
-    const { password: _, ...userWithoutPassword } = newUser
-    setUser(userWithoutPassword)
-    localStorage.setItem('fittech_user', JSON.stringify(userWithoutPassword))
-
-    return { success: true }
   }
 
   const logout = () => {
     setUser(null)
+    setAccessToken(null)
     localStorage.removeItem('fittech_user')
+    localStorage.removeItem('fittech_access_token')
+    localStorage.removeItem('fittech_refresh_token')
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout }}>
+    <AuthContext.Provider value={{ user, accessToken, API_URL, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   )
