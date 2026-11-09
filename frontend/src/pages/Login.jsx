@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
@@ -6,13 +6,21 @@ function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  const { login } = useAuth()
+  const { user, login } = useAuth()
   const navigate = useNavigate()
+
+  // Si ya está autenticado, redirigir automáticamente a /
+  useEffect(() => {
+    if (user) {
+      navigate('/', { replace: true })
+    }
+  }, [user, navigate])
 
   const handleSubmit = (e) => {
     e.preventDefault()
     setError('')
-    const res = login(email, password)
+    const cleanEmail = email.trim().toLowerCase()
+    const res = login(cleanEmail, password)
     if (res.success) {
       navigate('/')
     } else {
@@ -44,7 +52,8 @@ function Login() {
               className="form-control"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="ej: 123"
+              placeholder="••••••••"
+              minLength={6}
               required
             />
           </div>

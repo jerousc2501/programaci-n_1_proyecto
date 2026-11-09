@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
@@ -6,14 +6,30 @@ function Register() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
-  const { register } = useAuth()
+  const { user, register } = useAuth()
   const navigate = useNavigate()
+
+  // Si ya está autenticado, redirigir automáticamente a /
+  useEffect(() => {
+    if (user) {
+      navigate('/', { replace: true })
+    }
+  }, [user, navigate])
 
   const handleSubmit = (e) => {
     e.preventDefault()
     setError('')
-    const res = register({ name, email, password })
+
+    const cleanEmail = email.trim().toLowerCase()
+
+    if (password !== confirmPassword) {
+      setError('Las contraseñas no coinciden.')
+      return
+    }
+
+    const res = register({ name, email: cleanEmail, password })
     if (res.success) {
       navigate('/')
     } else {
@@ -57,6 +73,19 @@ function Register() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
+              minLength={6}
+              required
+            />
+          </div>
+          <div className="mb-3">
+            <label className="form-label text-muted">Confirmar Contraseña</label>
+            <input
+              type="password"
+              className="form-control"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="••••••••"
+              minLength={6}
               required
             />
           </div>

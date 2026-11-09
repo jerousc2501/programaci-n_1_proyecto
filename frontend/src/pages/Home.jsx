@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import Navbar from '../components/Navbar'
+import Footer from '../components/Footer'
 import { useAuth } from '../context/AuthContext'
 
 function Home() {
-  const { user, logout } = useAuth()
-  const [isOpen, setIsOpen] = useState(false)
+  const { user } = useAuth()
 
   const FEATURES = [
     { id: 'planes', icon: '🏋️‍♂️', title: 'Explorar Planes', desc: 'Descubrí planes personalizados para tus objetivos.', linkText: 'Ver más' },
@@ -13,43 +13,13 @@ function Home() {
 
   return (
     <div className="d-flex flex-column min-vh-100">
-      {/* Navbar con bienvenida y logout */}
-      <nav className="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
-        <div className="container">
-          <a className="navbar-brand fw-bold" href="/">FitTech</a>
-          <button 
-            className="navbar-toggler" 
-            type="button" 
-            onClick={() => setIsOpen(!isOpen)}
-            aria-expanded={isOpen}
-            aria-label="Toggle navigation"
-          >
-            <span className="navbar-toggler-icon"></span>
-          </button>
-          <div className={`collapse navbar-collapse justify-content-end ${isOpen ? 'show' : ''}`} id="navbarNav">
-            <ul className="navbar-nav align-items-center">
-              <li className="nav-item me-3 text-white-50">
-                ¡Hola, <span className="text-white fw-bold">{user?.name || user?.email}</span>! ({user?.rol})
-              </li>
-              <li className="nav-item">
-                <button 
-                  onClick={logout} 
-                  className="btn btn-outline-light btn-sm px-3"
-                >
-                  Cerrar Sesión
-                </button>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
-      {/* Main Content */}
       <main className="flex-grow-1 my-5">
         <section className="container mb-5">
           <div className="p-5 mb-4 bg-light rounded-3 shadow-sm border text-center">
             <div className="container-fluid py-5">
-              <h1 className="display-5 fw-bold text-dark">Bienvenido a FitTech, {user?.name || 'Usuario'}</h1>
+              <h1 className="display-5 fw-bold text-dark">Bienvenido a FitTech, {user?.name || user?.email || 'Usuario'}</h1>
               <p className="col-md-8 fs-4 mx-auto text-muted my-3">
                 Tu plataforma integral de Fitness y Nutrición. Conectamos profesionales con personas que buscan mejorar su estilo de vida.
               </p>
@@ -76,12 +46,7 @@ function Home() {
         </section>
       </main>
 
-      {/* Footer */}
-      <footer className="bg-dark text-white text-center py-4 mt-auto shadow-sm">
-        <div className="container">
-          <p className="mb-0 text-white-50">&copy; {new Date().getFullYear()} FitTech - Plataforma de Fitness y Nutrición. Todos los derechos reservados.</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }
