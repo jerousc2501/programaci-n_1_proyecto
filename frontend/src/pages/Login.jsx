@@ -60,7 +60,7 @@ function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              minLength={6}
+              minLength={8}
               required
             />
           </div>

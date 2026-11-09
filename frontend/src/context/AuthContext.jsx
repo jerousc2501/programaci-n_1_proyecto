@@ -20,10 +20,28 @@ export const AuthProvider = ({ children }) => {
     return localStorage.getItem('fittech_access_token') || null
   })
 
+  const fetchUserProfile = async (token) => {
+    try {
+      const response = await fetch(`${API_URL}/auth/me/`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      if (response.ok) {
+        const userData = await response.json()
+        setUser(userData)
+        localStorage.setItem('fittech_user', JSON.stringify(userData))
+      }
+    } catch (err) {
+      console.error('Error al obtener el perfil de usuario:', err)
+    }
+  }
+
   const login = async (email, password) => {
     try {
-      // DRF SimpleJWT espera 'username' o 'email' dependiendo de la config. Aquí enviamos email y password.
-      const response = await fetch(`${API_URL}/token/`, {
+      const response = await fetch(`${API_URL}/auth/login/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -40,15 +58,16 @@ export const AuthProvider = ({ children }) => {
         }
       }
 
-      // Guardar tokens
-      localStorage.setItem('fittech_access_token', data.access)
-      localStorage.setItem('fittech_refresh_token', data.refresh)
-      setAccessToken(data.access)
+      // Guardar access token
+      const token = data.access || data.token
+      localStorage.setItem('fittech_access_token', token)
+      if (data.refresh) {
+        localStorage.setItem('fittech_refresh_token', data.refresh)
+      }
+      setAccessToken(token)
 
-      // Obtener datos del usuario autenticado si el backend lo provee, o simular perfil básico
-      const userData = { email: email.trim().toLowerCase() }
-      setUser(userData)
-      localStorage.setItem('fittech_user', JSON.stringify(userData))
+      // Obtener el perfil completo del usuario (/auth/me/)
+      await fetchUserProfile(token)
 
       return { success: true }
     } catch (err) {
@@ -59,7 +78,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
-      const response = await fetch(`${API_URL}/register/`, {
+      const response = await fetch(`${API_URL}/auth/register/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -73,12 +92,11 @@ export const AuthProvider = ({ children }) => {
       const data = await response.json()
 
       if (!response.ok) {
-        // Formatear errores de DRF
         const errorMsg = Object.values(data).flat()[0] || 'Error al registrar usuario.'
         return { success: false, message: errorMsg }
       }
 
-      // Una vez registrado exitosamente, hacer login automático
+      // Login automático post-registro
       return await login(userData.email, userData.password)
     } catch (err) {
       console.error('Error en registro:', err)
@@ -86,12 +104,28 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  const logout = () => {
-    setUser(null)
-    setAccessToken(null)
-    localStorage.removeItem('fittech_user')
-    localStorage.removeItem('fittech_access_token')
-    localStorage.removeItem('fittech_refresh_token')
+  const logout = async () => {
+    try {
+      const refreshToken = localStorage.getItem('fittech_refresh_token')
+      if (accessToken && refreshToken) {
+        await fetch(`${API_URL}/auth/logout/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+          },
+          body: JSON.stringify({ refresh: refreshToken })
+        })
+      }
+    } catch (err) {
+      console.error('Error al invalidar token en backend:', err)
+    } finally {
+      setUser(null)
+      setAccessToken(null)
+      localStorage.removeItem('fittech_user')
+      localStorage.removeItem('fittech_access_token')
+      localStorage.removeItem('fittech_refresh_token')
+    }
   }
 
   return (
