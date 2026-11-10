@@ -3,19 +3,25 @@ import { useParams, Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import { useAuth } from '../context/AuthContext'
+import { useCart } from '../context/CartContext'
 
 function ProductDetail() {
   const { id } = useParams()
   const { API_URL, accessToken } = useAuth()
-  const [producto, setProducto] = useState(null)
+  const { addToCart } = useCart()
+  const [plan, setPlan] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [added, setAdded] = useState(false)
 
   useEffect(() => {
-    const fetchProductDetail = async () => {
+    const fetchPlanDetail = async () => {
       try {
         setLoading(true)
-        let response = await fetch(`${API_URL}/productos/${id}/`, {
+        setError(null)
+
+        // Petición GET exclusiva al endpoint /api/planes/${id}/ con el token JWT de autorización
+        const response = await fetch(`${API_URL}/planes/${id}/`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -24,43 +30,37 @@ function ProductDetail() {
         })
 
         if (!response.ok) {
-          // Fallback a planes si el ID corresponde a un plan
-          response = await fetch(`${API_URL}/planes/${id}/`, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              ...(accessToken ? { 'Authorization': `Bearer ${accessToken}` } : {})
-            }
-          })
-          if (!response.ok) {
-            throw new Error('No se pudo encontrar el detalle del producto o plan solicitado.')
-          }
-          const planData = await response.json()
-          setProducto({
-            id: planData.id,
-            nombre: planData.nombre,
-            descripcion: planData.descripcion || 'Plan de entrenamiento y nutrición profesional adaptado a tus metas.',
-            precio: planData.precio,
-            stock: planData.stock !== undefined ? planData.stock : 10,
-            duracion_dias: planData.duracion_dias,
-            imagen: planData.imagen || 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=600&auto=format&fit=crop&q=80'
-          })
-          setLoading(false)
-          return
+          throw new Error('No se pudo encontrar el detalle del plan solicitado.')
         }
 
         const data = await response.json()
-        setProducto(data)
+        setPlan({
+          id: data.id,
+          nombre: data.nombre,
+          descripcion: data.descripcion || 'Plan de entrenamiento y nutrición profesional adaptado a tus metas.',
+          precio: data.precio,
+          duracion_dias: data.duracion_dias,
+          estado: data.estado || 'activo',
+          imagen: data.imagen || 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=600&auto=format&fit=crop&q=80'
+        })
       } catch (err) {
-        console.error('Error fetching product detail:', err)
+        console.error('Error fetching plan detail:', err)
         setError(err.message)
       } finally {
         setLoading(false)
       }
     }
 
-    fetchProductDetail()
+    fetchPlanDetail()
   }, [API_URL, id, accessToken])
+
+  const handleAddToCart = () => {
+    if (plan) {
+      addToCart(plan)
+      setAdded(true)
+      setTimeout(() => setAdded(false), 2000)
+    }
+  }
 
   return (
     <div className="d-flex flex-column min-vh-100">
@@ -78,7 +78,7 @@ function ProductDetail() {
             <div className="spinner-border text-primary" role="status">
               <span className="visually-hidden">Cargando...</span>
             </div>
-            <p className="text-muted mt-2">Cargando detalle del producto...</p>
+            <p className="text-muted mt-2">Cargando detalle del plan...</p>
           </div>
         )}
 
@@ -88,41 +88,39 @@ function ProductDetail() {
           </div>
         )}
 
-        {!loading && !error && producto && (
+        {!loading && !error && plan && (
           <div className="row g-5 align-items-center">
             <div className="col-md-6">
               <img 
-                src={producto.imagen || 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=600&auto=format&fit=crop&q=80'} 
-                alt={producto.nombre} 
+                src={plan.imagen} 
+                alt={plan.nombre} 
                 className="img-fluid rounded shadow-sm w-100"
                 style={{ maxHeight: '450px', objectFit: 'cover' }}
               />
             </div>
             <div className="col-md-6">
-              <h1 className="fw-bold mb-3">{producto.nombre}</h1>
-              <h3 className="text-primary fw-bold mb-4">${producto.precio}</h3>
+              <h1 className="fw-bold mb-3">{plan.nombre}</h1>
+              <h3 className="text-primary fw-bold mb-4">${plan.precio}</h3>
               
               <div className="mb-4">
                 <h5 className="fw-bold text-secondary">Descripción</h5>
-                <p className="text-muted">{producto.descripcion || 'Sin descripción disponible.'}</p>
+                <p className="text-muted">{plan.descripcion}</p>
               </div>
 
               <div className="mb-4">
-                <span className={`badge ${producto.stock > 0 ? 'bg-success' : 'bg-danger'} fs-6 px-3 py-2`}>
-                  {producto.stock !== undefined ? (producto.stock > 0 ? `Stock disponible: ${producto.stock}` : 'Sin stock') : 'Disponible'}
+                <span className="badge bg-info text-dark fs-6 px-3 py-2 me-2">
+                  Duración: {plan.duracion_dias} días
                 </span>
-                {producto.duracion_dias && (
-                  <span className="badge bg-info text-dark fs-6 px-3 py-2 ms-2">
-                    Duración: {producto.duracion_dias} días
-                  </span>
-                )}
+                <span className={`badge ${plan.estado === 'activo' ? 'bg-success' : 'bg-secondary'} fs-6 px-3 py-2`}>
+                  Estado: {plan.estado}
+                </span>
               </div>
 
               <button 
-                className="btn btn-dark btn-lg w-100 py-3 mt-2 shadow-sm" 
-                disabled
+                className={`btn btn-lg w-100 py-3 mt-2 shadow-sm ${added ? 'btn-success' : 'btn-primary'}`}
+                onClick={handleAddToCart}
               >
-                Agregar al carrito (Próximamente)
+                {added ? '¡Agregado al carrito!' : 'Agregar al carrito'}
               </button>
             </div>
           </div>

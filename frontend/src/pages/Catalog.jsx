@@ -3,19 +3,24 @@ import { Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import { useAuth } from '../context/AuthContext'
+import { useCart } from '../context/CartContext'
 
 function Catalog() {
   const { API_URL, accessToken } = useAuth()
-  const [productos, setProductos] = useState([])
+  const { addToCart } = useCart()
+  const [planes, setPlanes] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [addedId, setAddedId] = useState(null)
 
   useEffect(() => {
-    const fetchProductos = async () => {
+    const fetchPlanes = async () => {
       try {
         setLoading(true)
-        // Intentamos consumir el endpoint de productos o planes según el backend
-        const response = await fetch(`${API_URL}/productos/`, {
+        setError(null)
+
+        // Consumimos exclusivamente el endpoint de planes validado en el backend
+        const response = await fetch(`${API_URL}/planes/`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -24,43 +29,39 @@ function Catalog() {
         })
 
         if (!response.ok) {
-          // Fallback a planes si productos no está disponible en este módulo
-          const fallbackResponse = await fetch(`${API_URL}/planes/`, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              ...(accessToken ? { 'Authorization': `Bearer ${accessToken}` } : {})
-            }
-          })
-          if (!fallbackResponse.ok) {
-            throw new Error('No se pudo cargar el catálogo desde el servidor.')
-          }
-          const fallbackData = await fallbackResponse.json()
-          // Adaptamos los planes como productos para el catálogo si es necesario
-          const adapted = (Array.isArray(fallbackData) ? fallbackData : fallbackData.results || []).map(p => ({
-            id: p.id,
-            nombre: p.nombre,
-            descripcion: p.descripcion || 'Plan de entrenamiento y nutrición profesional.',
-            precio: p.precio,
-            imagen: p.imagen || 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=500&auto=format&fit=crop&q=60'
-          }))
-          setProductos(adapted)
-          setLoading(false)
-          return
+          throw new Error('No se pudo cargar el catálogo de planes desde el servidor.')
         }
 
         const data = await response.json()
-        setProductos(Array.isArray(data) ? data : data.results || [])
+        const items = Array.isArray(data) ? data : data.results || []
+        
+        // Mapeamos los planes con estructura consistente para el catálogo
+        const formattedPlanes = items.map(p => ({
+          id: p.id,
+          nombre: p.nombre,
+          descripcion: p.descripcion || 'Plan de entrenamiento y nutrición profesional.',
+          precio: p.precio,
+          duracion_dias: p.duracion_dias,
+          imagen: p.imagen || 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=500&auto=format&fit=crop&q=60'
+        }))
+
+        setPlanes(formattedPlanes)
       } catch (err) {
-        console.error('Error fetching catalog:', err)
+        console.error('Error fetching planes catalog:', err)
         setError(err.message)
       } finally {
         setLoading(false)
       }
     }
 
-    fetchProductos()
+    fetchPlanes()
   }, [API_URL, accessToken])
+
+  const handleAddToCart = (plan) => {
+    addToCart(plan)
+    setAddedId(plan.id)
+    setTimeout(() => setAddedId(null), 2000)
+  }
 
   return (
     <div className="d-flex flex-column min-vh-100">
@@ -68,8 +69,8 @@ function Catalog() {
 
       <main className="flex-grow-1 my-5 container">
         <div className="text-center mb-5">
-          <h1 className="fw-bold display-6">Catálogo de Productos y Planes</h1>
-          <p className="text-muted">Explora nuestra selección para potenciar tu rendimiento</p>
+          <h1 className="fw-bold display-6">Catálogo de Planes FitTech</h1>
+          <p className="text-muted">Explora nuestros planes de entrenamiento y nutrición</p>
         </div>
 
         {loading && (
@@ -77,7 +78,7 @@ function Catalog() {
             <div className="spinner-border text-primary" role="status">
               <span className="visually-hidden">Cargando...</span>
             </div>
-            <p className="text-muted mt-2">Cargando catálogo...</p>
+            <p className="text-muted mt-2">Cargando planes...</p>
           </div>
         )}
 
@@ -87,35 +88,46 @@ function Catalog() {
           </div>
         )}
 
-        {!loading && !error && productos.length === 0 && (
+        {!loading && !error && planes.length === 0 && (
           <div className="alert alert-info text-center" role="alert">
-            No hay productos disponibles en este momento.
+            No hay planes disponibles en este momento.
           </div>
         )}
 
-        {!loading && !error && productos.length > 0 && (
+        {!loading && !error && planes.length > 0 && (
           <div className="row g-4">
-            {productos.map((prod) => (
-              <div className="col-12 col-md-6 col-lg-4" key={prod.id}>
+            {planes.map((plan) => (
+              <div className="col-12 col-md-6 col-lg-4" key={plan.id}>
                 <div className="card h-100 shadow-sm border-0">
-                  {prod.imagen && (
+                  {plan.imagen && (
                     <img 
-                      src={prod.imagen} 
+                      src={plan.imagen} 
                       className="card-img-top" 
-                      alt={prod.nombre} 
+                      alt={plan.nombre} 
                       style={{ height: '220px', objectFit: 'cover' }}
                     />
                   )}
                   <div className="card-body d-flex flex-column p-4">
-                    <h3 className="card-title h5 fw-bold text-dark">{prod.nombre}</h3>
+                    <h3 className="card-title h5 fw-bold text-dark">{plan.nombre}</h3>
                     <p className="card-text text-muted small flex-grow-1">
-                      {prod.descripcion ? `${prod.descripcion.substring(0, 90)}...` : 'Sin descripción.'}
+                      {plan.descripcion ? `${plan.descripcion.substring(0, 90)}...` : 'Sin descripción.'}
                     </p>
+                    <div className="mb-2">
+                      <span className="badge bg-secondary">Duración: {plan.duracion_dias} días</span>
+                    </div>
                     <div className="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
-                      <span className="fw-bold fs-5 text-primary">${prod.precio}</span>
-                      <Link to={`/producto/${prod.id}`} className="btn btn-outline-primary btn-sm px-3">
-                        Ver detalle
-                      </Link>
+                      <span className="fw-bold fs-5 text-primary">${plan.precio}</span>
+                      <div className="d-flex gap-2">
+                        <Link to={`/producto/${plan.id}`} className="btn btn-outline-primary btn-sm px-2">
+                          Detalle
+                        </Link>
+                        <button 
+                          className={`btn btn-sm px-2 ${addedId === plan.id ? 'btn-success' : 'btn-primary'}`}
+                          onClick={() => handleAddToCart(plan)}
+                        >
+                          {addedId === plan.id ? '¡Agregado!' : 'Añadir'}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
