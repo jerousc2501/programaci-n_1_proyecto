@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import { useAuth } from '../context/AuthContext'
@@ -56,7 +57,7 @@ function Home() {
               <p className="col-md-8 fs-4 mx-auto text-muted my-3">
                 Tu plataforma integral de Fitness y Nutrición conectada con Django REST Framework.
               </p>
-              <a className="btn btn-primary btn-lg px-4 gap-3 mt-2" href="#catalogo">Ver Planes Disponibles</a>
+              <Link className="btn btn-primary btn-lg px-4 gap-3 mt-2" to="/catalogo">Ver Catálogo Completo</Link>
             </div>
           </div>
         </section>
