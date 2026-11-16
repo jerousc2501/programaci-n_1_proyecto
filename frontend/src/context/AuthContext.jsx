@@ -39,6 +39,12 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  useEffect(() => {
+    if (accessToken) {
+      fetchUserProfile(accessToken)
+    }
+  }, [accessToken])
+
   const login = async (email, password) => {
     try {
       const response = await fetch(`${API_URL}/auth/login/`, {

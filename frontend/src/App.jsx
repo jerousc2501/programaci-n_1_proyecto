@@ -10,6 +10,7 @@ import ProductDetail from './pages/ProductDetail'
 import Cart from './pages/Cart'
 import Checkout from './pages/Checkout'
 import AdminPanel from './pages/AdminPanel'
+import MisRutinas from './pages/MisRutinas'
 import './App.css'
 
 function App() {
@@ -58,6 +59,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Checkout />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/mis-rutinas" 
+              element={
+                <ProtectedRoute>
+                  <MisRutinas />
                 </ProtectedRoute>
               } 
             />

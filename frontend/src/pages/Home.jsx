@@ -53,7 +53,7 @@ function Home() {
         <section className="container mb-5">
           <div className="p-5 mb-4 bg-light rounded-3 shadow-sm border text-center">
             <div className="container-fluid py-5">
-              <h1 className="display-5 fw-bold text-dark">Bienvenido a FitTech, {user?.email || 'Usuario'}</h1>
+              <h1 className="display-5 fw-bold text-dark">Bienvenido a FitTech, {user?.first_name || (user?.username && !user.username.includes('@') ? user.username : null) || user?.username?.split('@')[0] || user?.email?.split('@')[0] || 'Usuario'}</h1>
               <p className="col-md-8 fs-4 mx-auto text-muted my-3">
                 Tu plataforma integral de Fitness y Nutrición conectada con Django REST Framework.
               </p>

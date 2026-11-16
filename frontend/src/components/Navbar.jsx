@@ -10,6 +10,13 @@ function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
 
   const isStaffOrAdminOrVendor = user && (user.is_staff || ['admin', 'vendedor'].includes(user?.rol?.toLowerCase()))
+  const displayName =
+    user?.first_name ||
+    (user?.username && !user.username.includes('@') ? user.username : null) ||
+    user?.name ||
+    user?.username?.split('@')[0] ||
+    user?.email?.split('@')[0] ||
+    'Usuario'
 
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
@@ -32,6 +39,9 @@ function Navbar() {
                   <Link className="nav-link" to="/catalogo">Catálogo</Link>
                 </li>
                 <li className="nav-item">
+                  <Link className="nav-link" to="/mis-rutinas">Mis Rutinas</Link>
+                </li>
+                <li className="nav-item">
                   <Link className="nav-link" to="/carrito">
                     Carrito
                     {totalItems > 0 && <span className="badge bg-primary ms-1">{totalItems}</span>}
@@ -43,7 +53,7 @@ function Navbar() {
                   </li>
                 )}
                 <li className="nav-item me-3 text-white-50 ms-lg-3">
-                  ¡Hola, <span className="text-white fw-bold">{user.name || user.email}</span>!
+                  ¡Hola, <span className="text-white fw-bold">{displayName}</span>!
                 </li>
                 <li className="nav-item">
                   <button 
