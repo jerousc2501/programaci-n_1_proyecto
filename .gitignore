@@ -3,3 +3,7 @@ venv/
 db.sqlite3
 __pycache__/
 node_modules/
+umllmkey
+*.key
+.env
+frontend/.env

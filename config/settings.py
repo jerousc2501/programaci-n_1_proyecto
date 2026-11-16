@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 import os
 from pathlib import Path
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,12 +22,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-auzr82!^+vdng60p$ton3w^)#amqy7$7100tebujjm@ia7l1nw'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-auzr82!^+vdng60p$ton3w^)#amqy7$7100tebujjm@ia7l1nw')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.up.railway.app']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.up.railway.app', '.vercel.app']
 
 
 # Application definition
@@ -82,14 +83,10 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'programacion1_db',
-        'USER': 'postgres_django_user',
-        'PASSWORD': 'secret',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
+    'default': dj_database_url.config(
+        default=os.getenv('DATABASE_URL', f"sqlite:///{BASE_DIR / 'db.sqlite3'}"),
+        conn_max_age=600,
+    )
 }
 
 AUTH_USER_MODEL = 'users.Usuario'
@@ -139,6 +136,12 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 CSRF_TRUSTED_ORIGINS = [
     'https://programaci-n1proyecto-production.up.railway.app',
+    'https://*.up.railway.app',
+    'https://*.vercel.app',
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:5173',
 ]
 
 CORS_ALLOWED_ORIGINS = [
