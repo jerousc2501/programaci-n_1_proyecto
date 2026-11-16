@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import { useCart } from '../context/CartContext'
+import { useAuth } from '../context/AuthContext'
 
 function Checkout() {
   const { cart, totalPrice, clearCart } = useCart()
+  const { API_URL, accessToken } = useAuth()
   const navigate = useNavigate()
   const [formData, setFormData] = useState({
     nombre: '',
@@ -13,22 +15,60 @@ function Checkout() {
     tarjeta: '',
   })
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
   const [success, setSuccess] = useState(false)
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
+    setError(null)
 
-    // Simulando envío de pedido al backend
-    setTimeout(() => {
+    const token = accessToken || localStorage.getItem('fittech_access_token')
+    if (!token) {
+      setError('Debés iniciar sesión para finalizar la compra.')
       setLoading(false)
+      return
+    }
+
+    try {
+      const fechaInicio = new Date().toISOString().split('T')[0]
+
+      for (const item of cart) {
+        const response = await fetch(`${API_URL}/planes-clientes/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            plan: item.id,
+            cantidad: item.quantity || 1,
+            fecha_inicio: fechaInicio,
+          }),
+        })
+
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}))
+          const errMsg =
+            errData.detail ||
+            Object.values(errData).flat()[0] ||
+            'No se pudo procesar la compra del plan.'
+          throw new Error(errMsg)
+        }
+      }
+
       setSuccess(true)
       clearCart()
-    }, 1500)
+    } catch (err) {
+      console.error('Error al procesar el checkout:', err)
+      setError(err.message || 'Error de conexión al procesar el pago.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   if (success) {
@@ -68,6 +108,11 @@ function Checkout() {
           <div className="col-md-7">
             <div className="card shadow-sm border-0 p-4">
               <h4 className="fw-bold mb-3">Datos de Envío y Pago</h4>
+              {error && (
+                <div className="alert alert-danger py-2" role="alert">
+                  {error}
+                </div>
+              )}
               <form onSubmit={handleSubmit}>
                 <div className="mb-3">
                   <label className="form-label text-muted">Nombre completo</label>
